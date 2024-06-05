@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class JUnitExampleTest {
 
     @Test
-    void demoTestMethod (){
+    public void demoTestMethod() {
         assertTrue(true);
     }
 }
