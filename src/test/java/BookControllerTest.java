@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -63,37 +64,35 @@ public class BookControllerTest {
     @Test
     public void getBookById() throws Exception {
         Mockito.when(bookRepository.findById(recordOne.getBookId())).thenReturn(java.util.Optional.of(recordOne));
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/book/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())  // This will print the response to the console
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Harry Potter")));
+        mockMvc.perform(MockMvcRequestBuilders.get("/book/1").contentType(MediaType.APPLICATION_JSON)).andDo(print())  // This will print the response to the console
+                .andExpect(status().isOk()).andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue())).andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Harry Potter")));
     }
 
     @Test
-    public void createBookSuccess() throws Exception{
-       Book bookRecord = Book.builder()
-               .bookId(1l)
-               .name("Load of the ring")
-               .summery("this is the summery of the Load of the ring book")
-               .rating(5)
-               .build();
+    public void createBookSuccess() throws Exception {
+        Book bookRecord = Book.builder().bookId(1L).name("Load of the ring").summery("this is the summery of the Load of the ring book").rating(5).build();
 
-       Mockito.when(bookRepository.save(bookRecord)).thenReturn(bookRecord);
+        Mockito.when(bookRepository.save(bookRecord)).thenReturn(bookRecord);
 
-       String resContent = objectWriter.writeValueAsString(bookRecord);
+        String resContent = objectWriter.writeValueAsString(bookRecord);
 
 
-        MockHttpServletRequestBuilder mockHttpRequest = MockMvcRequestBuilders.post("/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(resContent);
+        MockHttpServletRequestBuilder mockHttpRequest = MockMvcRequestBuilders.post("/book").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(resContent);
 
-        mockMvc.perform(mockHttpRequest)
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Load of the ring")));
+        mockMvc.perform(mockHttpRequest).andExpect(status().isOk()).andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue())).andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Load of the ring")));
+    }
+
+    @Test
+    public void updateBookSuccess() throws Exception {
+        Book bookRecord = Book.builder().bookId(1L).name("Load of the ring part 2").summery("this is the summery of the Load of the ring book part 2").rating(4).build();
+
+        Mockito.when(bookRepository.findById(recordOne.getBookId())).thenReturn(java.util.Optional.of(bookRecord));
+        Mockito.when(bookRepository.save(bookRecord)).thenReturn(bookRecord);
+
+        String updatedContentString = objectWriter.writeValueAsString(bookRecord);
+
+        MockHttpServletRequestBuilder mockHttpRequest = MockMvcRequestBuilders.put("/book").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(updatedContentString);
+
+        mockMvc.perform(mockHttpRequest).andExpect(jsonPath("$", notNullValue())).andExpect(jsonPath("$.name", is("Load of the ring part 2")));
     }
 }
