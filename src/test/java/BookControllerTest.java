@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -94,5 +95,13 @@ public class BookControllerTest {
         MockHttpServletRequestBuilder mockHttpRequest = MockMvcRequestBuilders.put("/book").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(updatedContentString);
 
         mockMvc.perform(mockHttpRequest).andExpect(jsonPath("$", notNullValue())).andExpect(jsonPath("$.name", is("Load of the ring part 2")));
+    }
+
+    @Test
+    public void deleteBookSuccess() throws Exception {
+        Mockito.when(bookRepository.findById(recordTwo.getBookId())).thenReturn(Optional.of(recordTwo));
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/book/2").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
     }
 }
