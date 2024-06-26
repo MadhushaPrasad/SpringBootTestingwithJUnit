@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookControllerTest {
@@ -56,12 +55,19 @@ public class BookControllerTest {
 
         Mockito.when(bookRepository.findAll()).thenReturn(records);
 
+        mockMvc.perform(MockMvcRequestBuilders.get("/book").contentType(MediaType.APPLICATION_JSON)).andDo(print())  // This will print the response to the console
+                .andExpect(status().isOk()).andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(3))).andExpect(MockMvcResultMatchers.jsonPath("$[1].name", is("Harry Potter")));
+    }
+
+    @Test
+    public void getBookById() throws Exception {
+        Mockito.when(bookRepository.findById(recordOne.getBookId())).thenReturn(java.util.Optional.of(recordOne));
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/book")
+                        .get("/book/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())  // This will print the response to the console
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(3)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[2].name", is("Grokking Algorithms")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Harry Potter")));
     }
 }
