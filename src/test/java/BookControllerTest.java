@@ -4,26 +4,41 @@ import com.rest.application.Book;
 import com.rest.application.BookController;
 import com.rest.application.BookRepository;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookControllerTest {
 
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectWriter objectWriter = objectMapper.writer();
-    Book recordOne = new Book(1L, "Harry Potter", "Test Summery", 6);
-    Book recordTwo = new Book(2L, "Harry Potter", "Test Summery", 6);
-    private Mockito mockito;
+
+    Book recordOne = new Book(1L, "Harry Potter", "Test Summary", 6);
+    Book recordTwo = new Book(2L, "Harry Potter", "Test Summary", 6);
+    Book recordThree = new Book(3L, "Grokking Algorithms", "Test Summary", 6);
+
     @Mock
     private BookRepository bookRepository;
+
     @InjectMocks
     private BookController bookController;
 
@@ -32,6 +47,21 @@ public class BookControllerTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup().build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(bookController).build();
+    }
+
+    @Test
+    public void getAllRecordsSuccess() throws Exception {
+        List<Book> records = new ArrayList<>(Arrays.asList(recordOne, recordTwo, recordThree));
+
+        Mockito.when(bookRepository.findAll()).thenReturn(records);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/book")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())  // This will print the response to the console
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(3)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[2].name", is("Grokking Algorithms")));
     }
 }
