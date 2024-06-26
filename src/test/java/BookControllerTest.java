@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -69,5 +70,30 @@ public class BookControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Harry Potter")));
+    }
+
+    @Test
+    public void createBookSuccess() throws Exception{
+       Book bookRecord = Book.builder()
+               .bookId(1l)
+               .name("Load of the ring")
+               .summery("this is the summery of the Load of the ring book")
+               .rating(5)
+               .build();
+
+       Mockito.when(bookRepository.save(bookRecord)).thenReturn(bookRecord);
+
+       String resContent = objectWriter.writeValueAsString(bookRecord);
+
+
+        MockHttpServletRequestBuilder mockHttpRequest = MockMvcRequestBuilders.post("/book")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(resContent);
+
+        mockMvc.perform(mockHttpRequest)
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", notNullValue()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Load of the ring")));
     }
 }
